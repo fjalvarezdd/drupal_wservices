@@ -1,5 +1,4 @@
-\chapter{Introducción}
-\newpage
+\chapter{\huge{Introducción}}
 
 Además de como gestor de contenido, Drupal también puede funcionar sirviéndose de contenido externo 
 a través de otras aplicaciones Web, tales como Twitter, Facebook o Google. Esta comunicación entre 
@@ -9,50 +8,50 @@ con contenido a través de \emph{Aggregation} o \emph{feeds RSS}.
 
 Uno de los métodos más robustos para utilizar contenido externo es el módulo 
 \emph{FeedAPI (Application Programming Interface)} ya que permite fácilmente utilizar RSS 
-para ser usado desde Drupal. Otro módulo importante para la integración de Drupal con servicios Web es 
-\emph{Service} ya que nos ayudará a conectarnos con servicios Web utilizando diferentes protocolos, como
+para ser usado desde Drupal. Otro módulo importante para la integración de Drupal con Servicios Web es 
+\emph{Service} ya que nos ayudará a conectarnos con Servicios Web utilizando diferentes protocolos, como
 XMLRPC, JSON, JSON-RPC, REST, SOAP y AMF. En este sección revisaremos cómo interactuar nuestro sitio Drupal
 utilizando estas interfaces.
 
 En esta sección además aprenderemos:
 
 \begin{itemize}
-  \item ¿Qué son los servicios Web y para qué se utilizan?
-  \item ¿Para qué y cómo utiliza Drupal servicios Web?
-  \item Drupal como proveedor y consumidor de servicios
-  \item Normas para desarrollar y utilizar servicios Web.
+  \item ¿Qué son los Servicios Web y para qué se utilizan?
+  \item ¿Para qué y cómo utiliza Drupal Servicios Web?
+  \item Drupal como proveedor y consumidor de Servicios
+  \item Normas para desarrollar y utilizar Servicios Web.
 \end{itemize}
 
-\section{¿Qué son los servicios Web?}
+\section{¿Qué son los Servicios Web?}
 
 Para conseguir que nuestro sitio Drupal se comunicque e interactue con otras aplicaciones web como
 Facebook, Twitter o Google, necesitamos utilizar una ser de protocolos estándares de comunicación, 
-llamados servicios web. Los servicios web proporcionan interactuación y comunicación entre aplicaciones 
-web tanto remota como localmente. Es decir, podemos utilizar servicios web de Flickr para importar todas 
+llamados Servicios web. Los Servicios web proporcionan interactuación y comunicación entre aplicaciones 
+web tanto remota como localmente. Es decir, podemos utilizar Servicios web de Flickr para importar todas 
 nuestras fotografías de estas vacaciones, en nuestra aplicación Drupal.
 
-Las llamadas a servicios Web ocurren a través de protocolos cifrados y son traducidos en un lenguaje
+Las llamadas a Servicios Web ocurren a través de protocolos cifrados y son traducidos en un lenguaje
 estándar que son comprendidos por ambas partes, utilizando normalmente XML para este propósito. 
 XML es un formato basado en texto, por lo que casi todos los sistemas informáticos y las aplicaciones 
 pueden trabajar con dicho formato.
 
-El protocolo de servicios Web está basado en un concepto conocido como \textbf{Remote Procedure Calling (RPC)}
+El protocolo de Servicios Web está basado en un concepto conocido como \textbf{Remote Procedure Calling (RPC)}
 que permite a una aplicacion inicializar o ``llamar'' a una función dentro de una aplicación que se 
 encuentra en un servidor remoto. Por ejemplo, nuestro sitio Drupal puede llamar a un servicio Web de 
 Twitter para obtener nuestros últimos tweets y publicarlos automáticamente en nuestro sitio, o 
-moverlos a nuestro tablón de Facebook, utilizando los servicios Web de este último.
+moverlos a nuestro tablón de Facebook, utilizando los Servicios Web de este último.
 
 \subsection{XML y Servicios Web}
 
-Como se ha mencionado, los servicios Web utilizando el lenguaje de marcado XML para comunicarse.
-Nuestra aplicación Drupal y el proveedor de servicios Web utilizando el protocolo estándar de comunicación 
+Como se ha mencionado, los Servicios Web utilizando el lenguaje de marcado XML para comunicarse.
+Nuestra aplicación Drupal y el proveedor de Servicios Web utilizando el protocolo estándar de comunicación 
 HTTP para enviarse mensajes utilizando el lenguaje XML. Se utiliza XML porque es un lenguaje común entre 
 todos las aplicaciones Web y éste reemplaza al lenguaje propietario en el que el servicio Web fue escrito
 y el protocolo de comunicación que utilice. Así las aplicaciones se entienden más fácilmente. Quizás se 
 entienda mejor con esta analogía: si dos personas, un Español y un Ruso hablan entre si y ninguno conoce 
 el lenguaje del otro, lo usual es hablar un lenguaje que hablen ambos, como el Inglés. 
 
-Algunos ejemplos de protocolos de comunicación con servicios Web que veremos en el capítulo son:
+Algunos ejemplos de protocolos de comunicación con Servicios Web que veremos en el capítulo son:
 \begin{itemize}
   \item SOAP (Simple Object Access Protocol), 
   \item UDDI (Universal Description, Discovery and Integration),
@@ -67,7 +66,7 @@ Algunos ejemplos de protocolos de comunicación con servicios Web que veremos en
 \subsection{El protocolo REST}
 El protocolo REST (\textit{Representational State Transfer} o \textit{Transferencia de Estado Representacional}) 
 es una técnica para intercomunicar diferentes aplicaciones Web. En él se definen un conjuntos de bases por las cuales
-se diseñan servicios Web haciendo teniendo en cuenta los recursos del sistema, el acceso al estado de dichos 
+se diseñan Servicios Web haciendo teniendo en cuenta los recursos del sistema, el acceso al estado de dichos 
 recursos y cómo se transfieren por HTTP hacia clientes escritos en diversos lenguajes. La principal 
 característica de REST es la simplicidad, calidad por la que logró desbancar a SOAP y las interfaces basadas 
 en WSDL.
@@ -93,28 +92,31 @@ utilizar en nuestra aplicación.
   \caption{Ejemplo de Rest}
 \end{figure}
 
-\section{¿Son útiles los servicios Web para Drupal?}
+\section{¿Son útiles los Servicios Web para Drupal?}
 Está claro que si lo que necesitamos es utilizar contenido de otras aplicaciones Web, necesitamos hacer 
-uso de servicios Web. Debido a la interoperabilidad de éstos, podemos comunicar nuestra aplicación Drupal 
-con cualquier otra aplicación, sea Drupal o no. Utilizando Drupal como proveedor de servicios Web, además 
+uso de Servicios Web. Debido a la interoperabilidad de éstos, podemos comunicar nuestra aplicación Drupal 
+con cualquier otra aplicación, sea Drupal o no. Utilizando Drupal como proveedor de Servicios Web, además 
 podremos compartir nuestro contenido con el resto del mundo y no será específico de nuestro sitio.
  
 Integrando, por ejemplo, nuestra aplicación Drupal con Picassa, podemos subir automáticamente todas las 
 fotos que utilicemos en nuestro sitio a un álbum público, consiguiendo ser indexados también a través de 
-nuestras imágenes. Otro ejemplo lo podemos tener con Linkedin: utilizando los servicios de la famosa red de 
+nuestras imágenes. Otro ejemplo lo podemos tener con Linkedin: utilizando los Servicios de la famosa red de 
 profesionales podremos compartir contenido de nuestra aplicación a nuestro perfil, directamente  
 
-Además, podemos servirnos de datos externos para hacer nuestro sitio más rico: podemos utilizar servicios 
+Además, podemos servirnos de datos externos para hacer nuestro sitio más rico: podemos utilizar Servicios 
 de un centro metereológico o utilizar la herramienta de traducción o los mapas de Google para 
 convertir nuestra aplicación en un sitio robusto y funcional. 
 
-\section{¿Cómo utiliza Drupal servicios Web?}
+\section{¿Cómo utiliza Drupal Servicios Web?}
 
 Drupal puede utilizar los protocolos que antes mencionamos, incluyendo SOAP, REST y XML-RPC, así como 
-servirse de servicios cuyos mensajes hayan sido codificados usando RSS y XML. Para ello, se pueden escribir 
+servirse de Servicios cuyos mensajes hayan sido codificados usando RSS y XML. Para ello, se pueden escribir 
 clientes de comunicación propios o utilizar el módulo \textit{Services} o cualquier otro módulo de integración 
-con servicios. Pero primero veámos cómo funciona Drupal como un consumidor de servicios Web, es decir, 
-cómo consume Drupal recursos de un servidor Web externo.
+con Servicios. En este capítulo veremos cómo funciona Drupal como un consumidor de Servicios Web, es decir, 
+cómo consume Drupal recursos de un servidor Web externo. Además, haremos un repaso de cómo implementar que Drupal sirva contenido a otras aplicaciones Web, 
+es decir, cómo hacer que Drupal sea un proveedor de Servicios Web.
+
+
 
 
 
