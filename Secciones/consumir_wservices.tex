@@ -131,13 +131,186 @@ informes de Drupal para comprobar la configuración de PHP y ver si SOAP es habi
 En muchos servidores compartidos o dedicados, la extensión debe ser auto-activada, por lo que no tendrás que 
 hacer nada especial para que funcione. Sin embargo, en caso de que la extensión no está activada, tendremos que habilitarla.
 Podemos abrir el fichero de configuración de PHP (\textit{php.ini}) y buscar el siguiente texto desde en el apartado 
-\textit{Configure Command}: \verbatim{--enable-soap}. Este comando le muestra si SOAP está habilitado. 
+\textit{Configure Command}: \verb|--enable-soap|. Este comando le muestra si SOAP está habilitado. 
 
-A continuación, podemos acceder a la página de información de PHP (utilizando el método \textit{phpinfo()}) y 
+A continuación, podemos acceder a la página de información de PHP (utilizando el método \verb|phpinfo()|) y 
 buscar la sección específica para la extensión SOAP y deberíamos tener algo como lo siguiente:
 
 \begin{figure}
   \centering
-    \includegraphics[scale=0.2]{Assets/Soap/Imagenes/phpinfo.png}
+    \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/phpinfo.png}
   \caption{Extensión SOAP}
 \end{figure}
+
+Esto nos muestra que el cliente SOAP y el servidor SOAP están activados en nuestra configuración de PHP. 
+Teniendo en cuenta que tenemos el paquete SOAP en nuestra máquina, podemos activarlo desde un Terminal 
+de la siguiente manera, teniendo en cuenta que la distribución de Linux es Fedora/CentOS y que el usuario tiene 
+permisos para hacerlo (\textit{root}):
+
+\begin{verbatim}
+yum install php-soap
+\end{verbatim}
+
+Ahora que tenemos nuestro entorno listo, revisaremos un ejemplo de cómo se puede utilizar SOAP en Drupal, 
+para solicitar datos a través de una interacción con Servicios Web de un servidor externo. En este caso, 
+nos basaremos de un Servicio Web de W3School de conversión, y lo utilizaremos para pasar grados de Celsius a 
+Fahrenheit. Es un ejemplo sencillo pero con él aprenderemos cómo crear cualquier peticiones en SOAP y 
+podremos extrapolarla a nuestros requerimientos.
+
+La idea de este ejemplo es crear un nuevo tipo de contenido con un campo Celsius, en el cual, cada vez que 
+creemos un nodo de este tipo, llame a un Servicio Web SOAP y devuelva la llamada con la temperatura introducida, 
+convertida a grados Fahrenheit.
+
+\section{Uso del módulo Web service client}
+
+El módulo \textbf{Web service client} es un módulo de la comunidad Drupal que contiene una API que incorporará 
+a nuestra instalación de Drupal y que nos permitirá comunicarnos a través de la extensión de PHP 5.x SOAP. Esta 
+API nos permitirá además integrarnos con otros Servicios WEB REST, que veremos más adelante. La API se sirve 
+del módulo \textbf{Rules}, ya que integra las operaciones de Servicios Web como acciones de \textbf{Rules},  
+aunque también puede servirse de otros módulos. 
+  
+A continuación, mostraremos cómo instalar y configurar el módulo y, finalmente, cómo usarlo para conectarse a 
+un Servicio Web externo.
+
+\subsection{Requisitos}
+
+Para comenzar, veamos primero cómo resolver todos los requisitos para llegar a comunicarnos. Para empezar, crearemos 
+el tipo de contenido \textit{Celsius a Fahrenheit}, que nos servirá para almacenar la información en Celsius y 
+activar la llamada al Servicio Web para recoger la misma temperatura en Fahrenheit.
+
+Crearemos este nuevo tipo desde \textit{Structure / Content types} y \textit{Add content type}. Lo llamaremos 
+``Celsius a Fahrenheit'' y tendrá un campo \textit{Float} como muestra la siguiente pantalla:
+
+\begin{figure}
+  \centering
+    \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/content_type.png}
+  \caption{Tipo de contenido ``Celsius a Fahrenheit''}
+\end{figure}
+ 
+A continuación, instalaremos y configuraremos el módulo \textit{Rules}. Lo descargaremos de su página 
+\verb|http://drupal.org/project/rules|, hasta el momento, utilizando la versión \verb|v.7.x-2.2|.
+
+Lo descomprimimos y lo movemos al directorio de módulos de nuestro Drupal (\textit{/sites/all/modules}). 
+Ahora nos dirigimos a la página de administración de módulos de Drupal y activamos \textbf{Rules} y \textbf{Rules UI}:
+
+\begin{figure}
+  \centering
+    \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/rules_instalacion.png}
+  \caption{Instalación de los módulos Rules y Rules UI}
+\end{figure}
+
+\subsection{Instalando y configurando Web service client}
+
+Descarge el módulo desde su página: \verb\http://drupal.org/project/wsclient\. En el momento en el que se 
+escribieron estas líneas, el módulo se encontraba en la versión \verb|v.7.x-1.0-beta2|. Una vez que se ha descargado 
+el paquete, tendremos que:
+
+\begin{itemize}
+  \item Descromprimirlo en el directorio \textit{module} de nuestro drupal: \verb|/sites/all/modules|.
+  \item Acceder a la página de módulos de nuestro Drupal y activarlo.
+  \item Instalaremos los módulos \textbf{Web service client}, \textbf{Web service client SOAP} y \textbf{Web service client UI}
+\end{itemize}
+
+A continuación, nos disponemos a crear el descriptor del Servicio Web, utilizando la URL del WSDL del Servicio:
+
+\begin{verbatim}
+http://www.w3schools.com/webservices/tempconvert.asmx?WSDL
+\end{verbatim}
+
+Para ello, accedemos a \textit{Configuration / Web service descriptions}.
+Desde aquí, creamos un nuevo descriptor, el cual llamaremos \textbf{Conversor de Temperatura} e indicaremos que el Servicio es SOAP.
+
+\begin{figure}
+  \centering
+    \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/crear_descriptor_servicio.png}
+  \caption{Creación de descriptor del Servicio Web}
+\end{figure}
+
+Desde la nueva ventana podremos ver los métodos que implementa el servicio a los que podremos acceder desde Drupal, 
+en nuestro caso, vamos a utilizar el método \textit{CelsiusToFahrenheit}. También podremos comprobar qué tipos de 
+datos contempla el descriptor importado. 
+
+Una vez salvado el formulario, cumplimos todas las dependencias necesarias para implementar nuestra llamada. 
+Debido a que definimos que sólamente ibamos a llamar al servicio de conversión una vez que guardaramos contenido del tipo 
+\textit{Celsius a Fahrenheit}, nos disponemos a crear una regla que actue de \textit{trigger} una vez que salvemos contenido 
+de dicho tipo.
+
+Nuestra llamada al servicio se representaría con el siguiente diagrama:
+
+\begin{figure}
+  \centering
+    \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/diagrama_soap.png}
+  \caption{Diagrama Servicio}
+\end{figure}
+
+
+
+Para ello, desde la interfaz de administración (\textit{Configuración / Rules}) añadimos una nueva regla con 
+las siguientes características:
+
+\begin{itemize}
+  \item Name: \textit{Celsius a Fahrenheit}
+  \item Tags: \textit{celsius, fahrenheit}
+  \item Reacts on event: \textit{After saving new content}  
+\end{itemize}
+
+Tras salvar este formulario, se nos presenta otro nuevo formulario en el que podremos incluir condiciones y 
+reacciones de este evento. Tendremos que completarlo con las siguientes condiciones y acciones:
+
+\begin{itemize}
+  \item Condition \textbf{content is of given type}:
+  
+  \begin{itemize}
+    \item En el bloque \textit{Conditions} clicamos en \textit{Add condition}.
+    \item En el selector, buscamos \textit{Content is of a type} y en el nuevo bloque que nos aparece con los 
+    tipos de contenido, elegimos nuestro tipo: \textit{Celsius a Fahrenheit}.
+    \item Salvamos el fomulario 
+	\end{itemize}
+	
+  \item Action \textbf{create a data structure}:
+  \begin{itemize}
+    \item En el bloque \textit{Actions} clicamos en \textit{Add action}.
+    \item De este selector, elegimos \textit{Create a data structure} y de la nueva ventana que nos aparece, 
+    	el valor será \textit{Conversor de Temperatura: CelsiusToFahrenheit}. Salvamos.
+  	\item Elegimos el \textit{Data selector} que sea el campo de nuestro tipo de contenido: \textit{node:field-temperatura}
+	\item El último paso será crear una etiqueta para el resultado de nuestra llamada al servicio. En el 
+    	 bloque \textit{Provided variables}, nombramos la variable con \textit{Celius} y el nombre de variable, \textit{celsius\_input}.
+    \end{itemize}
+  \item Action \textbf{call web service}
+  \begin{itemize}
+    \item Para la llamada al Servicio Web, añadimos una nueva acción \textit{Conversor de Temperatura: CelsiusToFahrenheit}.
+    \item Tenemos que tener en cuenta que el dato que utiliza el servicio será \textit{celsius\_input}. 
+    \item En este caso, en el apartado \textit{Provider variables} vamos a renombrar el nombre de la variable como 
+    \textit{fahrenheit\_output}.
+  \end{itemize}
+  \item Action \textbf{display result}
+  \begin{itemize}
+    \item Por último, vamos a elegir que nuestra respuesta se muestre por pantalla con la opción \textit{Show a message on the site}.
+    \item El campo que mostraremos será el definido anteriormente como \textit{fahrenheit-output:CelsiusToFahrenheitResult}.
+  \end{itemize}
+\end{itemize}
+
+Para comprobar cómo funciona nuestra llamada al servicio, ejecutamos la acción, es decir, creamos un nodo del 
+tipo \textit{Celsius a Fahrenheit}:
+
+\begin{figure}
+  \centering
+    \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/crear_nodo.png}
+  \caption{Creando un nodo}
+\end{figure}
+
+Tras salvar el nodo anterior obtendríamos la llamada al servicio y su pertinente respuesta, tal como muestra 
+el siguiente pantallazo:
+
+\begin{figure}
+  \centering
+    \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/resultado_crear_nodo.png}
+  \caption{Respuesta del servicio}
+\end{figure}
+
+
+
+
+
+
+
