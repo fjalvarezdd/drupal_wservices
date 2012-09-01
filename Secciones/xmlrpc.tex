@@ -1,312 +1,235 @@
-\chapter{\Large{Drupal como consumidor de Servicios Web}}
-\newline 
+\section{XML-RPC}
 
-Anteriormente hemos citado que nuestro sitio Drupal puede utilizar contenido externo a través de Servicios 
-Web, utilizando los protocolos XML-RPC, REST, JSON, XML y RSS. Primero revisaremos con detalle un protocolo 
-que puede ser usado por Drupal para comunicarse: el protocolo \textbf{SOAP (\textit{Simple Object Access Protocol})}.
-Utilizaremos el módulo \textbf{Web Service Client}, ya que nos proporciona una interfaz para integrarnos 
-con Servicios Externos. Se centra en la integración de operaciones de Servicios Web como acciones de reglas, 
-pero también se puede utilizar como proveedor de datos para otros módulos. Debido a estas acciones, necesitaremos 
-además el módulo \textbf{Rules}. La principal característica del módulo \textit{Web Service Client} es que 
-viene con una interfaz de usuario que permite a los administradores del sitio crear descripciones de 
-servicios REST y SOAP con sus respectivas operaciones y tipos de datos. Además, gracias a este módulo, 
-podemos utilizar el \textbf{WSDL (\textit{Web Service Description Language})} del proveedor de Servicios Web.
+XML-RPC es uno de los protocolos de Servicios Web que citamos en el primer capítulo, y que se puede decir, 
+de los más importantes, ya que Drupal lo soporta de manera nativa. Es decir, este protocolo está implementado 
+en el Drupal sin necesitar módulos o librerías de la comunidad. En este capítulo, aprenderemos a trabajar con él 
+y utilizarlo como un cliente y como un proveedor de Servicios Web.
 
-WSDL es un lenguaje basado en XML que se utiliza para describir Servicios Web. Especifica dónde está el 
-Servicio Web y el tipo de operaciones que éste implementa. Incluye especificaciones como el puerto 
-o \textit{endpoint} dónde se encuentra el Servicio, el tipo de puerto o interfaz, operaciones permitidas y 
-cómo es el mensaje permitido para cada operación. 
+\subsection{¿Qué es XML-RPC?}
 
-\section{SOAP en Drupal}
-
-SOAP (Simple Object Access Protocol) es un protocolo orientado al acceso a objetos, que nos permite intercambiar 
-información. Al igual que Al igual que XML-RPC y REST, el protocolo SOAP utiliza XML como formato de 
-intercambio. Funciona básicamente como una base para nuestros interfaces de Servicios Web y permite construir 
-un entorno de Servicio Web sobre el protocolo. Una de las principales ventajas de SOAP es que éste se encuentra 
-de manera nativa a partir de la versión PHP5, con lo que no necesitaremos librarías externas.
-
-SOAP funciona haciendo peticiones RPC (Remote Procedure Call) a un servidor externo. En esta sección veremos 
-cómo integrar SOAP en Drupal para hacer peticiones a un WSDL de prueba, como el que provee la W3C para convertir 
-métricas de temperatura.
-
-La manera en la que la llamada se ejecuta es codificando el mensaje en formato XML por el cliente SOAP y 
-ese mensaje es enviado a través del protocolo HTTP al servidor de aplicaciones Web externo. Para una mayor 
-seguridad, se peude utilizar el protocolo HTTPS, por ejemplo, si estamos tratando con un Servicio Web de un banco.
-   
-Drupal se sirve de dos maneras diferentes a la hora de consumir utilizando SOAP. Drupal Soporta la extensión SOAP  
-de PHP 5.x como mencionamos y de la extensión NuSOAP. NuSOAP no es una extensión SOAP sino más bien un conjunto 
-de clases PHP que permiten la creación y consumo de Servicios Web. No se necesita instalar ninguna exptensión PHP 
-para trabajar con NuSOAP y soporta las especificaciones de SOAP 1.1, pudiendo también generar documentos WSDL.
-
-
-\subsection{Mensaje SOAP}
-
-SOAP se basa en XML por lo que se considera de lectura humana, pero hay un esquema específico que debe 
-ser respetado. Primero vamos a dividir un mensaje SOAP, eliminando datos para estudiar los elementos 
-específicos que componen un mensaje SOAP.
-
-\begin{verbatim}
-<?xml version="1.0"?>
-<soap:Envelope
- xmlns:soap="http://www.w3.org/2001/12/soap-envelope"
- soap:encodingStyle="http://www.w3.org/2001/12/soap-encoding">
- <soap:Header>
-  ...
- </soap:Header>
- <soap:Body>
-  ...
-  <soap:Fault>
-   ...
-  </soap:Fault>
- </soap:Body>
-</soap:Envelope>
-\end{verbatim}
-
-Esto podría parecer sólo un archivo XML normal, pero lo que lo convierte en un mensaje SOAP es el elemento 
-raíz \textit{Envelope} con el espacio de nombres con http://www.w3.org/2001/12/soap-envelope. El atributo 
-\textit{soap: encodingStyle} determina los tipos de datos utilizados en el archivo, pero SOAP en sí no 
-tiene una codificación predeterminada.
-
-\textit{soap:Envelope} es obligatorio, pero el elemento siguiente, \textit{soap: Header}, es opcional y 
-por lo general contiene información relevante para la autenticación y gestión de sesiones. 
-El protocolo SOAP no ofrece ninguna \textit{built-in} de autenticación, pero se lo permite a los desarrolladores 
-incluirlo a través de esta etiqueta de cabecera.
-
-A continuación está el elemento requerido \textit{soap:Body} que contiene el mensaje real RPC, incluyendo 
-los nombres de método y, en el caso de una respuesta, los valores devueltos del método. El elemento 
-\textit{soap:Fault} es opcional, si está presente, se tiene algún mensaje de error o información de estado 
-para el mensaje SOAP y debe ser un elemento secundario de \textit{soap:Body}.
-
-Ahora que ya entendemos los fundamentos de lo que constituye un mensaje SOAP, echemos un vistazo a la 
-solicitud SOAP y los mensajes de respuesta. Vamos a comenzar con una petición.
-
-\begin{verbatim}
-<?xml version="1.0"?>
-<soap:Envelope
- xmlns:soap="http://www.w3.org/2001/12/soap-envelope"
- soap:encodingStyle="http://www.w3.org/2001/12/soap-encoding">
- <soap:Body xmlns:m="http://www.yourwebroot.com/stock">
-  <m:ObtenerPreciosMercado>
-   <m:NombreMercado>IBM</m:NombreMercado>
-  </m:ObtenerPreciosMercado>
- </soap:Body>
-</soap:Envelope>
-\end{verbatim}
-
-El anterior es un ejemplo de mensaje SOAP de solicitud para obtener el precio de las acciones de una 
-empresa en particular. Dentro de \textit{soap:Body} se observa el elemento \textit{ObtenerPreciosMercado} que es 
-específico de la aplicación. No es un elemento SOAP, y toma su nombre de la función en el servidor que se 
-llamará para esta solicitud. \textit{NombreMercado} también es específico de la aplicación y es un argumento 
-para la función.
-
-El mensaje de respuesta es similar a la solicitud:
-
-\begin{verbatim}
-<?xml version="1.0"?>
-<soap:Envelope
- xmlns:soap="http://www.w3.org/2001/12/soap-envelope"
- soap:encodingStyle="http://www.w3.org/2001/12/soap-encoding">
- <soap:Body xmlns:m="http://www.yourwebroot.com/stock">
-  <m:ObtenerPreciosMercadoResponse>
-   <m:Precio>183.08</m:Precio>
-  </m:ObtenerPreciosMercadoResponse>
- </soap:Body>
-</soap:Envelope>
-\end{verbatim}
-
-En el elemento \textit{soap:Body} hay un elemento \textit{ObtenerPreciosMercadoResponse} con un hijo \textit{Precio}, 
-que contiene los datos de retorno. Como es de suponer, tanto \textit{ObtenerPreciosMercadoResponse} tanto \textit{Precio} 
-son específicos para esta aplicación.
- 
-Ahora que ya hemos visto un ejemplo de petición y respuesta y entendemos la estructura de un mensaje SOAP, 
-vamos a instalar NuSOAP y construir un cliente SOAP y el servidor para probar la generación de este tipo de 
-mensajes.
-
-\subsection{Instalando SOAP en PHP}
-
-Antes de utilizar SOAP en frameworks de PHP, como Drupal, hay que asegurarse de que la extensión SOAP 
-está instalado y habilitada en nuestro servidor. SOAP se ejecuta como una extensión de PHP. Podemos revisar 
-el archivo de configuración PHP, o pulse en el link para comprobar su versión de PHP, en su la página de 
-informes de Drupal para comprobar la configuración de PHP y ver si SOAP es habilitado. 
-
-En muchos servidores compartidos o dedicados, la extensión debe ser auto-activada, por lo que no tendrás que 
-hacer nada especial para que funcione. Sin embargo, en caso de que la extensión no está activada, tendremos que habilitarla.
-Podemos abrir el fichero de configuración de PHP (\textit{php.ini}) y buscar el siguiente texto desde en el apartado 
-\textit{Configure Command}: \verb|--enable-soap|. Este comando le muestra si SOAP está habilitado. 
-
-A continuación, podemos acceder a la página de información de PHP (utilizando el método \verb|phpinfo()|) y 
-buscar la sección específica para la extensión SOAP y deberíamos tener algo como lo siguiente:
-
-\begin{figure}
-  \centering
-    \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/phpinfo.png}
-  \caption{Extensión SOAP}
-\end{figure}
-
-Esto nos muestra que el cliente SOAP y el servidor SOAP están activados en nuestra configuración de PHP. 
-Teniendo en cuenta que tenemos el paquete SOAP en nuestra máquina, podemos activarlo desde un Terminal 
-de la siguiente manera, teniendo en cuenta que la distribución de Linux es Fedora/CentOS y que el usuario tiene 
-permisos para hacerlo (\textit{root}):
-
-\begin{verbatim}
-yum install php-soap
-\end{verbatim}
-
-Ahora que tenemos nuestro entorno listo, revisaremos un ejemplo de cómo se puede utilizar SOAP en Drupal, 
-para solicitar datos a través de una interacción con Servicios Web de un servidor externo. En este caso, 
-nos basaremos de un Servicio Web de W3School de conversión, y lo utilizaremos para pasar grados de Celsius a 
-Fahrenheit. Es un ejemplo sencillo pero con él aprenderemos cómo crear cualquier peticiones en SOAP y 
-podremos extrapolarla a nuestros requerimientos.
-
-La idea de este ejemplo es crear un nuevo tipo de contenido con un campo Celsius, en el cual, cada vez que 
-creemos un nodo de este tipo, llame a un Servicio Web SOAP y devuelva la llamada con la temperatura introducida, 
-convertida a grados Fahrenheit.
-
-\section{Uso del módulo Web service client}
-
-El módulo \textbf{Web service client} es un módulo de la comunidad Drupal que contiene una API que incorporará 
-a nuestra instalación de Drupal y que nos permitirá comunicarnos a través de la extensión de PHP 5.x SOAP. Esta 
-API nos permitirá además integrarnos con otros Servicios WEB REST, que veremos más adelante. La API se sirve 
-del módulo \textbf{Rules}, ya que integra las operaciones de Servicios Web como acciones de \textbf{Rules},  
-aunque también puede servirse de otros módulos. 
-  
-A continuación, mostraremos cómo instalar y configurar el módulo y, finalmente, cómo usarlo para conectarse a 
-un Servicio Web externo.
-
-\subsection{Requisitos}
-
-Para comenzar, veamos primero cómo resolver todos los requisitos para llegar a comunicarnos. Para empezar, crearemos 
-el tipo de contenido \textit{Celsius a Fahrenheit}, que nos servirá para almacenar la información en Celsius y 
-activar la llamada al Servicio Web para recoger la misma temperatura en Fahrenheit.
-
-Crearemos este nuevo tipo desde \textit{Structure / Content types} y \textit{Add content type}. Lo llamaremos 
-``Celsius a Fahrenheit'' y tendrá un campo \textit{Float} como muestra la siguiente pantalla:
-
-\begin{figure}
-  \centering
-    \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/content_type.png}
-  \caption{Tipo de contenido ``Celsius a Fahrenheit''}
-\end{figure}
- 
-A continuación, instalaremos y configuraremos el módulo \textit{Rules}. Lo descargaremos de su página 
-\verb|http://drupal.org/project/rules|, hasta el momento, utilizando la versión \verb|v.7.x-2.2|.
-
-Lo descomprimimos y lo movemos al directorio de módulos de nuestro Drupal (\textit{/sites/all/modules}). 
-Ahora nos dirigimos a la página de administración de módulos de Drupal y activamos \textbf{Rules} y \textbf{Rules UI}:
-
-\begin{figure}
-  \centering
-    \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/rules_instalacion.png}
-  \caption{Instalación de los módulos Rules y Rules UI}
-\end{figure}
-
-\subsection{Instalando y configurando Web service client}
-
-Descarge el módulo desde su página: \verb\http://drupal.org/project/wsclient\. En el momento en el que se 
-escribieron estas líneas, el módulo se encontraba en la versión \verb|v.7.x-1.0-beta2|. Una vez que se ha descargado 
-el paquete, tendremos que:
+Al igual que el protocolo SOAP visto anteriormente, XML-RPC se basa en RPC (\textit{Remote Procedure Call}), es decir, 
+en llamadas a procedimientos remotos, para enviar y recibir mensajes cifrados en XML a través del protocolo HTTP.
+Dichos mensajes contienen información sobre:
 
 \begin{itemize}
-  \item Descromprimirlo en el directorio \textit{module} de nuestro drupal: \verb|/sites/all/modules|.
-  \item Acceder a la página de módulos de nuestro Drupal y activarlo.
-  \item Instalaremos los módulos \textbf{Web service client}, \textbf{Web service client SOAP} y \textbf{Web service client UI}
-\end{itemize}
+  \item El procedimiento que se va a ejecutar en el servidor.
+  \item Los parámetros
+\end{itemize} 
 
-A continuación, nos disponemos a crear el descriptor del Servicio Web, utilizando la URL del WSDL del Servicio:
+Además, el servidor devuelve el resultado en formato XML.
+
+\subsubsection{Diferencias entre XML-RPC y SOAP}
+
+XML-RPC fue el primer mecanismo que surgió para invocar procedimientos remotos vía XML, ofrece una manera 
+muy sencilla de invocar operaciones en sistemas heterogéneos a través de una estructura simple. Sin embargo, 
+SOAP es una implementación más robusta para llevar acabo una intercomunicación en XML, a diferencia de XML-RPC 
+a SOAP se le han integrado diversos mecanismos que le permiten operar en ambientes distribuidos mas complejos tales 
+como:
+
+\begin{itemize}
+  \item Un lenguaje neutro para su descripción (WSDL/``Web Services Description Language'').
+  \item Directorios distribuidos para su ubicación (UDDI/``Universal Discovery, Description and Integration'')  
+\end{itemize} 
+
+\subsubsection{Prerrequisitos para XML-RPC}
+
+Si lo que queremos implementar es un servidor de peticiones, no tenemos que preocuparnos de ningún requisito previo, ya 
+que al ser mensajes enviados a través de HTTP, utilizarán el puerto web estándar (puerto 80). El fichero \verb|xmlrpc.php| 
+del directorio raíz de nuestro Drupal recibirá las peticiones y las enrutará.
+
+Para ser usado como cliente, solo tenemos que tener en cuenta que muchas empresas de alojamiento Web no nos permiten 
+realizar peticiones HTTP por razones de seguridad. Sería conveniente contactar con nuestro proveedor si no estamos seguros 
+si nuestros clientes funcionarán.
+
+\subsection{Drupal como servidor XML-RPC}
+
+Para configurar nuestro Drupal como un Servidor Web XML-RPC necesitaremos implementar tres puntos:
+
+\begin{enumerate}
+  \item Relación entre nombre de método remoto y función PHP a ejecutarse al ser llamados.
+  \item La firma del método (\textit{signature}): tipo de retorno y de parámetros requeridos. Un método puede tener varias firmas.
+  \item Documentación del método (\textit{docstring}).
+\end{enumerate}
+
+Como es normal en Drupal, vamos a implementar el ejemplo como un pequeño módulo que responda a peticiones. Procedemos pues a 
+crear un ``Hola Mundo'' de un Servidor XML-RPC en Drupal, con la estructura y el código básicos. Para empezar, generaremos el 
+fichero de información del módulo en \verb|sites/all/modules/holaxmlrpc/holaxmlrpc.info|:
 
 \begin{verbatim}
-http://www.w3schools.com/webservices/tempconvert.asmx?WSDL
+name = Hola Mundo - Servidor XML RPC
+description = Módulo que responderá con un "Hola" a cada petición XML-RPC 
+				que se le realice a nuestro Drupal
+package = Libro Experto Drupal 7
+core = 7.x 
 \end{verbatim}
 
-Para ello, accedemos a \textit{Configuration / Web service descriptions}.
-Desde aquí, creamos un nuevo descriptor, el cual llamaremos \textbf{Conversor de Temperatura} e indicaremos que el Servicio es SOAP.
+El código de \verb|holaxmlrpc.module| quedaría como sigue:
 
-\begin{figure}
+\begin{verbatim}
+<?php
+
+/**
+ * Implementacion del metodo hook_xmlrpc()
+ * Relaciona nombre de procedimiento remoto y función PHP a ejecutarse
+ */
+
+function holaxmlrpc_xmlrpc()
+{
+    $metodos['remotoHola.hola'] = 'xmls_holaxmlrpc_hola';
+    return $methodos;
+}
+
+/**
+ * Saluda a una peticion
+ * @param string $nombre
+ */
+function xmls_holaxmlrpc_hola($nombre) {
+    if(!$nombre){
+        return xmlrpc_error(1, t("Perdona, no te puedo saludar si no me dices tu nombre"));
+    }
+    return t("¡Hola, @nombre! ¿Que tal?", array("@nombre" => $nombre));
+}
+\end{verbatim}
+
+¡Así de simple! Podemos complicar más nuestro servidor añadiendo más métodos en el array servicios de nuestro 
+Drupal y validando los parámetros de entrada de las peticiones que se nos realizan. Primero veamos cómo funciona 
+el \verb|hook\_xmlrpc()| y como testear este servicio.
+
+Este \textit{hook} permite a un módulo registrar mapeos entre métodos de un Servicio Web y funciones de PHP 
+a ejecutar, cuando un cliente invoca a los métodos de nuestro servidor XML-RPC. Devuelve un array con el mapeo así 
+como configuración referida a la firma del método y la documentación del mismo. En nuestro ejemplo, el método 
+\verb|remotoHola.hola| será el método público, y gracias a \verb|hook_xmlrpc()|, cada llamada a este método se 
+manejará a través de la función PHP \verb|xmls_holaxmlrpc_hola()|. Normalmente se utiliza el prefijo \verb|xmls_|\footnote{
+\textit{xmlns} es el atributo que se utiliza en XML para designar el espacio de nombres o \textit{namespace}} para las funciones 
+PHP para indicar que esta función habla con el mundo exterior.
+
+Además, podemos observar que en el código hemos útilizado un método para designar un error en la petición: 
+\verb|xmlrpc_error()|, mediante el cual podemos indicar el código de error y el mensaje que se enviará al cliente. Los 
+códigos de error son específicos de nuestra implementación, así que podremos utilizarlos a nuestro gusto.
+
+Probemos nuestro servicio. Asumiendo que el módulo está alojado en un servidor \verb|ejemplo.com| y que nos 
+encontramos en \verb|localhost|, tendremos que hacer una petición como la que sigue para comprobarlo:
+
+\begin{verbatim}
+$url = 'http://ejemplo.com/xmlrpc.php';
+$nombre_metodo = 'remotoHola.hola';
+$nombre = t('Fran');
+$resultado = xmlrpc($url, array($nombre_metodo => array($nombre)));
+\end{verbatim}
+
+El resultado de ejecutar el código es:
+
+\begin{verbatim}
+echo $resultado;
+>> "¡Hola, Fran! ¿Que tal?"
+\end{verbatim}
+
+\subsubsection{Firma y validación de los métodos} 
+
+Podemos, como mencionamos, validar los parámetros de entrada automáticamente utilizando el \verb|hook_xmlrpc()|. 
+De esta manera, comprobaremos a nivel de servidor el mensaje que intentan enviarnos en la petición es correcto, sin 
+añadir más lógica a nuestra función PHP final. Es muy recomendable utilizar esta validación, ya que Drupal 
+se encargará de responder a las peticiones con respeto a nuestra firma de método, y si el mensaje no satisface 
+lo descrito, será un método de Drupal (\verb|xmlrpc_server_call()|) el que responda con uno de los siguientes 
+mensajes de error:
+\begin{verbatim}
+-32602: Server error. Invalid method parameters.
+-32602: Server error. Wrong number of method parameters.
+\end{verbatim}
+dependiendo del caso.
+
+La lista de todas las posibles validaciones de entrada se puede 
+consultar en \verb|http://xmlrpc.scripting.com/spec.html|.
+
+Veamos un ejemplo de cómo añadir la firma y validación a nuestro método:
+
+\begin{verbatim}
+/**
+ * Implementacion del metodo hook_xmlrpc()
+ * Relaciona nombre de procedimiento remoto y función PHP a ejecutarse
+ */
+function holaxmlrpc_xmlrpc() {
+    $metodos = array();
+    $metodos[] = array(
+        'remotoHola.hola',         // Nombe de nuestro metodo externo
+        'xmls_holaxmlrpc_hola',    // Funcion PHP a ejecutar
+        array('string', 'String'), // Parametro de salida y despues, 
+                                   // todos los tipos de parametros de entrada
+        t('Saluda a clientes XML-RPC') // Descripcion
+    );
+    return $metodos;
+}
+\end{verbatim}
+
+El siguiente diagrama nos servirá para mostarnos el ciclo de vida de una petición XML-RPC y para introducir términos 
+relacionados con los métodos de sistema en XML-RPC:
+
+\begin{figure}[h]
   \centering
-    \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/crear_descriptor_servicio.png}
-  \caption{Creación de descriptor del Servicio Web}
+    \includegraphics[width=1\textwidth]{Assets/xmlrpc/Imagenes/workflow.png}
+  \caption{Diagrama de flujo de una petición XML-RPC}
 \end{figure}
 
-Desde la nueva ventana podremos ver los métodos que implementa el servicio a los que podremos acceder desde Drupal, 
-en nuestro caso, vamos a utilizar el método \textit{CelsiusToFahrenheit}. También podremos comprobar qué tipos de 
-datos contempla el descriptor importado. 
+\newpage
+\subsubsection{Métodos XML-RPC de Drupal}
 
-Una vez salvado el formulario, cumplimos todas las dependencias necesarias para implementar nuestra llamada. 
-Debido a que definimos que sólamente ibamos a llamar al servicio de conversión una vez que guardaramos contenido del tipo 
-\textit{Celsius a Fahrenheit}, nos disponemos a crear una regla que actue de \textit{trigger} una vez que salvemos contenido 
-de dicho tipo.
+Drupal tiene un listado de métodos de sistema para trabajar con XML-RPC como servidor. En este apartado describiremos 
+cada uno de ellos.
 
-Nuestra llamada al servicio se representaría con el siguiente diagrama:
+\large{system.listMethods} 	
 
-\begin{figure}
-  \centering
-    \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/diagrama_soap.png}
-  \caption{Diagrama Servicio}
-\end{figure}
+Se utiliza para listar todos los métodos disponibles de un Servidor XML-RPC. El método recorrerá todos los \verb|hook_xmlrpc()| 
+de los módulos activos para obtener un array de dichos métodos.  Para realizar una petición, haremos algo como:
 
-Para ello, desde la interfaz de administración (\textit{Configuración / Rules}) añadimos una nueva regla con 
-las siguientes características:
+\begin{verbatim}
+// Array con todos los métodos XML-RPC disponibles en el servidor
+$url = 'http://ejemplo.com/xmlrpc.php';
+$metodos = xmlrpc($url, array('system.listMethods'));
+\end{verbatim}
 
-\begin{itemize}
-  \item Name: \textit{Celsius a Fahrenheit}
-  \item Tags: \textit{celsius, fahrenheit}
-  \item Reacts on event: \textit{After saving new content}  
-\end{itemize}
+La respuesta será un mensaje como el siguiente:
 
-Tras salvar este formulario, se nos presenta otro nuevo formulario en el que podremos incluir condiciones y 
-reacciones de este evento. Tendremos que completarlo con las siguientes condiciones y acciones:
+\begin{verbatim}
+<?xml version="1.0" encoding="UTF-8"?>
+<methodResponse>
+    <params>
+        <param>
+            <value>
+                <array>
+                    <data>
+                        <value>
+                            <string>system.multicall</string>
+                        </value>
+                        <value>
+                            <string>system.methodSignature</string>
+                        </value>
+                        <value>
+                            <string>system.getCapabilities</string>
+                        </value>
+                        <value>
+                            <string>system.listMethods</string>
+                        </value>
+                        <value>
+                            <string>system.methodHelp</string>
+                        </value>
+                        <value>
+                            <string>remotoHola.hola</string>
+                        </value>
+                    </data>
+                </array>
+            </value>
+        </param>
+    </params>
+</methodResponse>
+\end{verbatim}
 
-\begin{itemize}
-  \item Condition \textbf{content is of given type}:
-  
-  \begin{itemize}
-    \item En el bloque \textit{Conditions} clicamos en \textit{Add condition}.
-    \item En el selector, buscamos \textit{Content is of a type} y en el nuevo bloque que nos aparece con los 
-    tipos de contenido, elegimos nuestro tipo: \textit{Celsius a Fahrenheit}.
-    \item Salvamos el fomulario 
-	\end{itemize}
-	
-  \item Action \textbf{create a data structure}:
-  \begin{itemize}
-    \item En el bloque \textit{Actions} clicamos en \textit{Add action}.
-    \item De este selector, elegimos \textit{Create a data structure} y de la nueva ventana que nos aparece, 
-    	el valor será \textit{Conversor de Temperatura: CelsiusToFahrenheit}. Salvamos.
-  	\item Elegimos el \textit{Data selector} que sea el campo de nuestro tipo de contenido: \textit{node:field-temperatura}
-	\item El último paso será crear una etiqueta para el resultado de nuestra llamada al servicio. En el 
-    	 bloque \textit{Provided variables}, nombramos la variable con \textit{Celius} y el nombre de variable, \textit{celsius\_input}.
-    \end{itemize}
-  \item Action \textbf{call web service}
-  \begin{itemize}
-    \item Para la llamada al Servicio Web, añadimos una nueva acción \textit{Conversor de Temperatura: CelsiusToFahrenheit}.
-    \item Tenemos que tener en cuenta que el dato que utiliza el servicio será \textit{celsius\_input}. 
-    \item En este caso, en el apartado \textit{Provider variables} vamos a renombrar el nombre de la variable como 
-    \textit{fahrenheit\_output}.
-  \end{itemize}
-  \item Action \textbf{display result}
-  \begin{itemize}
-    \item Por último, vamos a elegir que nuestra respuesta se muestre por pantalla con la opción \textit{Show a message on the site}.
-    \item El campo que mostraremos será el definido anteriormente como \textit{fahrenheit-output:CelsiusToFahrenheitResult}.
-  \end{itemize}
-\end{itemize}
+Así pues, ahora \verb|$metodos| contendrá un array con todos los métodos disponibles del sistema:
 
-Para comprobar cómo funciona nuestra llamada al servicio, ejecutamos la acción, es decir, creamos un nodo del 
-tipo \textit{Celsius a Fahrenheit}:
+\begin{verbatim}
+var_dump($metodos);
+>> array('system.multicall', 'system.methodSignature',
+		'system.getCapabilities', 'system.listMethods', 
+		'system.methodHelp', 'remotoHola.hola')
+\end{verbatim}
 
-\begin{figure}
-  \centering
-    \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/crear_nodo.png}
-  \caption{Creando un nodo}
-\end{figure}
-
-Tras salvar el nodo anterior obtendríamos la llamada al servicio y su pertinente respuesta, tal como muestra 
-el siguiente pantallazo:
-
-\begin{figure}
-  \centering
-    \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/resultado_crear_nodo.png}
-  \caption{Respuesta del servicio}
-\end{figure}
-
-
-
-
+\large{system.methodSignature} 	
