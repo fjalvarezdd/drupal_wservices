@@ -1,4 +1,4 @@
-\chapter{\huge{Introducción}}
+\section{\Huge{32.1 Introducción}}
 
 Además de como gestor de contenido, Drupal también puede funcionar sirviéndose de contenido externo 
 a través de otras aplicaciones Web, tales como Twitter, Facebook o Google. Esta comunicación entre 
@@ -22,7 +22,7 @@ En esta sección además aprenderemos:
   \item Normas para desarrollar y utilizar Servicios Web.
 \end{itemize}
 
-\section{¿Qué son los Servicios Web?}
+\section{\Large{32.1.1 ¿Qué son los Servicios Web?}}
 
 Para conseguir que nuestro sitio Drupal se comunicque e interactue con otras aplicaciones web como
 Facebook, Twitter o Google, necesitamos utilizar una ser de protocolos estándares de comunicación, 
@@ -41,7 +41,7 @@ encuentra en un servidor remoto. Por ejemplo, nuestro sitio Drupal puede llamar 
 Twitter para obtener nuestros últimos tweets y publicarlos automáticamente en nuestro sitio, o 
 moverlos a nuestro tablón de Facebook, utilizando los Servicios Web de este último.
 
-\subsection{XML y Servicios Web}
+\subsection{\large{XML y Servicios Web}}
 
 Como se ha mencionado, los Servicios Web utilizando el lenguaje de marcado XML para comunicarse.
 Nuestra aplicación Drupal y el proveedor de Servicios Web utilizando el protocolo estándar de comunicación 
@@ -63,7 +63,8 @@ Algunos ejemplos de protocolos de comunicación con Servicios Web que veremos en
   \item AMF (Action Message Format)  
 \end{itemize} 
 
-\subsection{El protocolo REST}
+\subsection{\large{El protocolo REST}}
+
 El protocolo REST (\textit{Representational State Transfer} o \textit{Transferencia de Estado Representacional}) 
 es una técnica para intercomunicar diferentes aplicaciones Web. En él se definen un conjuntos de bases por las cuales
 se diseñan Servicios Web haciendo teniendo en cuenta los recursos del sistema, el acceso al estado de dichos 
@@ -88,11 +89,12 @@ utilizar en nuestra aplicación.
  
 \begin{figure}
   \centering
-    \includegraphics{Assets/Introduccion/Imagenes/diagrama_servicios_web.png}
+    \includegraphics[width=1\textwidth]{Assets/Introduccion/Imagenes/diagrama_servicios_web.png}
   \caption{Ejemplo de Rest}
 \end{figure}
 
-\section{¿Son útiles los Servicios Web para Drupal?}
+\section{\Large{32.1.2 ¿Son útiles los Servicios Web para Drupal?}}
+
 Está claro que si lo que necesitamos es utilizar contenido de otras aplicaciones Web, necesitamos hacer 
 uso de Servicios Web. Debido a la interoperabilidad de éstos, podemos comunicar nuestra aplicación Drupal 
 con cualquier otra aplicación, sea Drupal o no. Utilizando Drupal como proveedor de Servicios Web, además 
@@ -107,7 +109,7 @@ Además, podemos servirnos de datos externos para hacer nuestro sitio más rico:
 de un centro metereológico o utilizar la herramienta de traducción o los mapas de Google para 
 convertir nuestra aplicación en un sitio robusto y funcional. 
 
-\section{¿Cómo utiliza Drupal Servicios Web?}
+\section{\Large{32.1.3 ¿Cómo utiliza Drupal Servicios Web?}}
 
 Drupal puede utilizar los protocolos que antes mencionamos, incluyendo SOAP, REST y XML-RPC, así como 
 servirse de Servicios cuyos mensajes hayan sido codificados usando RSS y XML. Para ello, se pueden escribir 
@@ -116,8 +118,23 @@ con Servicios. En este capítulo veremos cómo funciona Drupal como un consumido
 cómo consume Drupal recursos de un servidor Web externo. Además, haremos un repaso de cómo implementar que Drupal sirva contenido a otras aplicaciones Web, 
 es decir, cómo hacer que Drupal sea un proveedor de Servicios Web.
 
+\section{\Large{32.1.4 Drupal como consumidor de Servicios Web}}
 
+Anteriormente hemos citado que nuestro sitio Drupal puede utilizar contenido externo a través de Servicios 
+Web, utilizando los protocolos XML-RPC, REST, JSON, XML y RSS. Primero revisaremos con detalle un protocolo 
+que puede ser usado por Drupal para comunicarse: el protocolo \textbf{SOAP (\textit{Simple Object Access Protocol})}.
+Utilizaremos el módulo \textbf{Web Service Client}, ya que nos proporciona una interfaz para integrarnos 
+con Servicios Externos. Se centra en la integración de operaciones de Servicios Web como acciones de reglas, 
+pero también se puede utilizar como proveedor de datos para otros módulos. Debido a estas acciones, necesitaremos 
+además el módulo \textbf{Rules}. La principal característica del módulo \textit{Web Service Client} es que 
+viene con una interfaz de usuario que permite a los administradores del sitio crear descripciones de 
+servicios REST y SOAP con sus respectivas operaciones y tipos de datos. Además, gracias a este módulo, 
+podemos utilizar el \textbf{WSDL (\textit{Web Service Description Language})} del proveedor de Servicios Web.
 
+WSDL es un lenguaje basado en XML que se utiliza para describir Servicios Web. Especifica dónde está el 
+Servicio Web y el tipo de operaciones que éste implementa. Incluye especificaciones como el puerto 
+o \textit{endpoint} dónde se encuentra el Servicio, el tipo de puerto o interfaz, operaciones permitidas y 
+cómo es el mensaje permitido para cada operación. 
 
 
  

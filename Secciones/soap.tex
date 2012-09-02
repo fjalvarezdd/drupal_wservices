@@ -1,23 +1,4 @@
-\chapter{\Large{Drupal como consumidor de Servicios Web}}
-\newline 
-
-Anteriormente hemos citado que nuestro sitio Drupal puede utilizar contenido externo a través de Servicios 
-Web, utilizando los protocolos XML-RPC, REST, JSON, XML y RSS. Primero revisaremos con detalle un protocolo 
-que puede ser usado por Drupal para comunicarse: el protocolo \textbf{SOAP (\textit{Simple Object Access Protocol})}.
-Utilizaremos el módulo \textbf{Web Service Client}, ya que nos proporciona una interfaz para integrarnos 
-con Servicios Externos. Se centra en la integración de operaciones de Servicios Web como acciones de reglas, 
-pero también se puede utilizar como proveedor de datos para otros módulos. Debido a estas acciones, necesitaremos 
-además el módulo \textbf{Rules}. La principal característica del módulo \textit{Web Service Client} es que 
-viene con una interfaz de usuario que permite a los administradores del sitio crear descripciones de 
-servicios REST y SOAP con sus respectivas operaciones y tipos de datos. Además, gracias a este módulo, 
-podemos utilizar el \textbf{WSDL (\textit{Web Service Description Language})} del proveedor de Servicios Web.
-
-WSDL es un lenguaje basado en XML que se utiliza para describir Servicios Web. Especifica dónde está el 
-Servicio Web y el tipo de operaciones que éste implementa. Incluye especificaciones como el puerto 
-o \textit{endpoint} dónde se encuentra el Servicio, el tipo de puerto o interfaz, operaciones permitidas y 
-cómo es el mensaje permitido para cada operación. 
-
-\section{SOAP en Drupal}
+\section{\Huge{32.2 SOAP en Drupal}}
 
 SOAP (Simple Object Access Protocol) es un protocolo orientado al acceso a objetos, que nos permite intercambiar 
 información. Al igual que Al igual que XML-RPC y REST, el protocolo SOAP utiliza XML como formato de 
@@ -38,8 +19,7 @@ de PHP 5.x como mencionamos y de la extensión NuSOAP. NuSOAP no es una extensi�
 de clases PHP que permiten la creación y consumo de Servicios Web. No se necesita instalar ninguna exptensión PHP 
 para trabajar con NuSOAP y soporta las especificaciones de SOAP 1.1, pudiendo también generar documentos WSDL.
 
-
-\subsection{Mensaje SOAP}
+\section{\Large{32.2.1 Mensaje SOAP}}
 
 SOAP se basa en XML por lo que se considera de lectura humana, pero hay un esquema específico que debe 
 ser respetado. Primero vamos a dividir un mensaje SOAP, eliminando datos para estudiar los elementos 
@@ -122,7 +102,7 @@ Ahora que ya hemos visto un ejemplo de petición y respuesta y entendemos la est
 vamos a instalar NuSOAP y construir un cliente SOAP y el servidor para probar la generación de este tipo de 
 mensajes.
 
-\subsection{Instalando SOAP en PHP}
+\subsection{\large{Instalando SOAP en PHP}}
 
 Antes de utilizar SOAP en frameworks de PHP, como Drupal, hay que asegurarse de que la extensión SOAP 
 está instalado y habilitada en nuestro servidor. SOAP se ejecuta como una extensión de PHP. Podemos revisar 
@@ -137,7 +117,7 @@ Podemos abrir el fichero de configuración de PHP (\textit{php.ini}) y buscar el
 A continuación, podemos acceder a la página de información de PHP (utilizando el método \verb|phpinfo()|) y 
 buscar la sección específica para la extensión SOAP y deberíamos tener algo como lo siguiente:
 
-\begin{figure}[h]
+\begin{figure}
   \centering
     \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/phpinfo.png}
   \caption{Extensión SOAP}
@@ -162,7 +142,7 @@ La idea de este ejemplo es crear un nuevo tipo de contenido con un campo Celsius
 creemos un nodo de este tipo, llame a un Servicio Web SOAP y devuelva la llamada con la temperatura introducida, 
 convertida a grados Fahrenheit.
 
-\section{Uso del módulo Web service client}
+\section{\Large{32.2.2 Uso del módulo Web service client}}
 
 El módulo \textbf{Web service client} es un módulo de la comunidad Drupal que contiene una API que incorporará 
 a nuestra instalación de Drupal y que nos permitirá comunicarnos a través de la extensión de PHP 5.x SOAP. Esta 
@@ -173,7 +153,7 @@ aunque también puede servirse de otros módulos.
 A continuación, mostraremos cómo instalar y configurar el módulo y, finalmente, cómo usarlo para conectarse a 
 un Servicio Web externo.
 
-\subsection{Requisitos}
+\subsection{\large{Requisitos}}
 
 Para comenzar, veamos primero cómo resolver todos los requisitos para llegar a comunicarnos. Para empezar, crearemos 
 el tipo de contenido \textit{Celsius a Fahrenheit}, que nos servirá para almacenar la información en Celsius y 
@@ -182,7 +162,7 @@ activar la llamada al Servicio Web para recoger la misma temperatura en Fahrenhe
 Crearemos este nuevo tipo desde \textit{Structure / Content types} y \textit{Add content type}. Lo llamaremos 
 ``Celsius a Fahrenheit'' y tendrá un campo \textit{Float} como muestra la siguiente pantalla:
 
-\begin{figure}[h]
+\begin{figure}
   \centering
     \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/content_type.png}
   \caption{Tipo de contenido ``Celsius a Fahrenheit''}
@@ -194,7 +174,7 @@ A continuación, instalaremos y configuraremos el módulo \textit{Rules}. Lo des
 Lo descomprimimos y lo movemos al directorio de módulos de nuestro Drupal (\textit{/sites/all/modules}). 
 Ahora nos dirigimos a la página de administración de módulos de Drupal y activamos \textbf{Rules} y \textbf{Rules UI}:
 
-\begin{figure}[h]
+\begin{figure}
   \centering
     \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/rules_instalacion.png}
   \caption{Instalación de los módulos Rules y Rules UI}
@@ -221,7 +201,7 @@ http://www.w3schools.com/webservices/tempconvert.asmx?WSDL
 Para ello, accedemos a \textit{Configuration / Web service descriptions}.
 Desde aquí, creamos un nuevo descriptor, el cual llamaremos \textbf{Conversor de Temperatura} e indicaremos que el Servicio es SOAP.
 
-\begin{figure}[h]
+\begin{figure}
   \centering
     \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/crear_descriptor_servicio.png}
   \caption{Creación de descriptor del Servicio Web}
@@ -238,7 +218,7 @@ de dicho tipo.
 
 Nuestra llamada al servicio se representaría con el siguiente diagrama:
 
-\begin{figure}[h]
+\begin{figure}
   \centering
     \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/diagrama_soap.png}
   \caption{Diagrama Servicio}
@@ -292,7 +272,7 @@ reacciones de este evento. Tendremos que completarlo con las siguientes condicio
 Para comprobar cómo funciona nuestra llamada al servicio, ejecutamos la acción, es decir, creamos un nodo del 
 tipo \textit{Celsius a Fahrenheit}:
 
-\begin{figure}[h]
+\begin{figure}
   \centering
     \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/crear_nodo.png}
   \caption{Creando un nodo}
@@ -301,7 +281,7 @@ tipo \textit{Celsius a Fahrenheit}:
 Tras salvar el nodo anterior obtendríamos la llamada al servicio y su pertinente respuesta, tal como muestra 
 el siguiente pantallazo:
 
-\begin{figure}[h]
+\begin{figure}
   \centering
     \includegraphics[width=1\textwidth]{Assets/Soap/Imagenes/resultado_crear_nodo.png}
   \caption{Respuesta del servicio}
